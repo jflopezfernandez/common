@@ -1,0 +1,27 @@
+.TH COMMON 1 "26 August 2019"
+.SH NAME
+common \- Find the most common string in two files
+.SH SYNOPSIS
+.B common
+\fIfile1\fR \fIfile2\fR
+.SH DESCRIPTION
+.B common
+parses the input files, dynamically building a hash table from the
+input, and finding the most common string by calculating the geometric mean
+of the string's count in files 1 and 2.
+.PP
+A string could therefore be present in one file a near-infinite amount of
+times, but if it's not also present in the second file, it will result in a
+commonality score of zero.
+.SH OPTIONS
+.TP
+.BR \-h ", " \-\-help
+Display the program help menu and exit.
+.SH SEE ALSO
+strtok_r(3)
+.SH NOTES
+.SH AUTHOR
+Jose Fernando Lopez Fernandez <jflopezfernandez@gmail.com>
+.SH BUGS
+None reported as of 26 August, 2019.
+
