@@ -29,123 +29,18 @@
  */
 
 #include "common.h"
+
+static int first_file = TRUE;
+
+int processing_first_file(void) {
+    return first_file;
+}
+
+static char input_buffer[BUFFER_SIZE];
     
 #ifndef DELIMITERS
 #define DELIMITERS " \n\t!\"#$%&'()*+,-./:;<=>?@[\\]^_`}|{~"
 #endif
-
-#ifndef HASH_MODULUS
-#define HASH_MODULUS (52379)
-#else
-#error "HASH_MODULUS already defined."
-#endif // HASH_MODULUS
-
-static inline size_t hash(char* s) {
-    size_t hashval = 0;
-
-    while (*s) {
-        hashval = (*s++) + 211 * hashval;
-    }
-    
-    return hashval % HASH_MODULUS;
-}
-
-static double current_max = 0.0;
-
-static char* most_common_word = NULL;
-
-static int first_file = TRUE;
-
-/** Perfect 8x4 alignment
- * 
- */
-struct table_entry_t {
-    char* word;
-    size_t count1;
-    size_t count2;
-    struct table_entry_t* next;
-};
-
-static double geometric_mean(size_t a, size_t b) {
-    return sqrt(a * b);
-}
-
-static double commonality(struct table_entry_t* entry) {
-    return geometric_mean(entry->count1, entry->count2);
-}
-
-static struct table_entry_t* allocate_table_entry(void) {
-    struct table_entry_t* entry = malloc(sizeof (struct table_entry_t));
-
-    if (entry == NULL) {
-        fprintf(stderr, "Memory allocation failure in allocate_table_entry()\n");
-        exit(EXIT_FAILURE);
-    }
-
-    return entry;
-}
-
-static struct table_entry_t* create_table_entry(char* word) {
-    struct table_entry_t* entry = allocate_table_entry();
-
-    entry->count1 = 0;
-    entry->count2 = 0;
-    entry->word   = strdup(word);
-
-    if (entry->word == NULL) {
-        fprintf(stderr, "Memory allocation failure in create_table_entry->strdup(word)\n");
-        exit(EXIT_FAILURE);
-    }
-
-    return entry;
-}
-
-static struct table_entry_t *hash_table[HASH_MODULUS];
-
-static struct table_entry_t* lookup_word(char* word) {
-    struct table_entry_t* entry = hash_table[hash(word)];
-
-    while (entry) {
-        if (strings_match(word, entry->word)) {
-            return entry;
-        }
-
-        entry = entry->next;
-    }
-
-    return NULL;
-}
-
-static struct table_entry_t* add_word_to_table(char* word) {
-    struct table_entry_t* entry = lookup_word(word);
-
-    if (entry == NULL) {
-        entry = create_table_entry(word);
-
-        size_t hashval = hash(entry->word);
-        entry->next = hash_table[hashval];
-        hash_table[hashval] = entry;
-    }
-
-    if (first_file) {
-        ++entry->count1;
-    } else {
-        ++entry->count2;
-    }
-
-    if (entry->count1 && entry->count2) {
-        double entry_commonality_score = commonality(entry);
-
-        if (entry_commonality_score > current_max) {
-            current_max = entry_commonality_score;
-            most_common_word = entry->word;
-        }
-    }
-
-    return entry;
-}
-
-static char input_buffer[BUFSIZ];
 
 int main(int argc, char *argv[])
 {
@@ -183,8 +78,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (most_common_word) {
-        printf("%s\n", most_common_word);
+    if (most_common_shared_word()) {
+        printf("%s\n", most_common_shared_word());
     }
 
     return EXIT_SUCCESS;

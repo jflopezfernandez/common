@@ -22,9 +22,32 @@
 enum { FALSE = 0, TRUE = !FALSE };
 #endif // FALSE || TRUE
 
+#ifndef BUFFER_SIZE
+/** This buffer size was chosen because modern hard drives have sectors 4096
+ *  bytes long, making this the most efficient size for buffered IO.
+ * 
+ */
+#define BUFFER_SIZE (4096)
+#else
+#error "BUFFER_SIZE already defined."
+#endif // BUFFER_SIZE
+
 #include "file.h"
+#include "hash-table.h"
 #include "mem.h"
 #include "opt.h"
 #include "str.h"
+
+/* TODO: Rebase */
+inline double geometric_mean(size_t a, size_t b) {
+    return sqrt(a * b);
+}
+
+/* TODO: Rebase */
+inline double commonality(struct table_entry_t* entry) {
+    return geometric_mean(entry->count1, entry->count2);
+}
+
+int processing_first_file(void);
 
 #endif // PROJECT_INCLUDES_COMMON_H

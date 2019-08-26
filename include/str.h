@@ -17,4 +17,14 @@
  */
 int strings_match(const char* a, const char* b);
 
+#ifndef NUL
+/** This is a more semantically intuitive synonym for the null character, 
+ *  represented by a decimal value of 0 or an ASCII value of '\0'.
+ * 
+ */
+#define NUL '\0'
+#else
+#error "NUL is already defined."
+#endif
+
 #endif // PROJECT_INCLUDES_STR_H

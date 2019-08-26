@@ -66,8 +66,7 @@ static void print_help(void) {
     printf("\n");
 }
 
-/* TODO: version_str */
-static const char* version_str = "<version info goes here...>";
+static const char* version_str = "common 1.0.0";
 
 static void print_version_info(void) {
     printf("%s\n", version_str);
