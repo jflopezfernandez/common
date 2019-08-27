@@ -18,11 +18,20 @@
 #include <limits.h>
 #include <inttypes.h>
 
+#include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/param.h>
+#include <sys/resource.h>
+#include <sys/shm.h>
+#include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/types.h>
 
 #include <fcntl.h>
+#include <pthread.h>
+#include <signal.h>
+#include <syslog.h>
+#include <termios.h>
 
 #include <unistd.h>
 
@@ -40,6 +49,7 @@ enum { FALSE = 0, TRUE = !FALSE };
 #error "BUFFER_SIZE already defined."
 #endif // BUFFER_SIZE
 
+#include "err.h"
 #include "file.h"
 #include "hash-table.h"
 #include "mem.h"

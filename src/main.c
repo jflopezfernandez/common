@@ -35,6 +35,10 @@ static int first_file = TRUE;
 int processing_first_file(void) {
     return first_file;
 }
+   
+#ifndef DELIMITERS
+#define DELIMITERS " \n\t!\"#$%&'()*+,-./:;<=>?@[\\]^_`}|{~"
+#endif
 
 /** This is the buffer responsible for streamlining disk-read operations as
  *  much as possible. The buffer is 4096 bytes to match the sector size of most
@@ -43,19 +47,9 @@ int processing_first_file(void) {
  * 
  */
 static char input_buffer[BUFFER_SIZE];
-    
-#ifndef DELIMITERS
-#define DELIMITERS " \n\t!\"#$%&'()*+,-./:;<=>?@[\\]^_`}|{~"
-#endif
 
 int main(int argc, char *argv[])
 {
-    while (*++argv) {
-        printf("%12s: %s\n", *argv, (file_exists(*argv) ? "exists" : "does not exist"));
-    }
-
-    return EXIT_SUCCESS;
-
     const char** filenames = parse_command_line_options(argc, argv);
 
     char* token_reentrancy_pointer = NULL;

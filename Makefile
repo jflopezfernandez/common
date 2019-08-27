@@ -41,9 +41,9 @@ CC       = gcc
 # CFLAGS   = -std=c99 -Wall -Wextra -Wpedantic -O3 -mtune=intel -march=sandybridge -g -pg
 # Release
 CFLAGS   = -std=c99 -Wall -Wextra -Wpedantic -g -ggdb -O0
-CPPFLAGS = -D_GNU_SOURCE -D_POSIX_C_SOURCE -D_XOPEN_SOURCE=700
+CPPFLAGS = -D_POSIX_C_SOURCE -D_POSIX_THREADS -D_GNU_SOURCE -D_XOPEN_SOURCE=700
 LDFLAGS  = -O
-LIBS     = -lm
+LIBS     = -lm -pthread
 
 GROFF    = groff
 GROFFOPTS= -Tascii -man

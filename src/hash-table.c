@@ -57,7 +57,7 @@ static hash_t basic_hash(const char* str) {
  */
 __attribute__((hot, nonnull(1)))
 static hash_t weinberger_hash(const char* str) {
-    hash_t hash = 0x00;
+    hash_t hash = 0;
     hash_t bits = 8 * sizeof (hash_t);
     hash_t three_fourths = (bits * 3) / 4;
     hash_t one_eighth = bits / 8;
@@ -122,21 +122,6 @@ static struct table_entry_t* create_table_entry(const char* word) {
     return entry;
 }
 
-__attribute__((nonnull(1)))
-static struct table_entry_t* lookup_word(const char* word) {
-    struct table_entry_t* entry = hash_table[calculate_hash(word)];
-
-    while (entry) {
-        if (strings_match(word, entry->word)) {
-            return entry;
-        }
-
-        entry = entry->next;
-    }
-
-    return NULL;
-}
-
 /** This function calculates the geometric mean of two real numbers in the
  *  expected manner: it multiplies the two numbers together and takes the
  *  square root.
@@ -163,6 +148,30 @@ static inline double commonality(struct table_entry_t* entry) {
     return geometric_mean((double) entry->count1, (double) entry->count2);
 }
 
+/** This function takes care of hashing the current string and returning the
+ *  address the entry is supposed to be in. This function takes care of
+ *  resolving hash collisions by iterating through the linked list of entries
+ *  at the hash value in question until either a free spot is found or the
+ *  string matches the string in one of the linked list entries. This latter
+ *  case means we should not allocate a new entry; we simply need to increment
+ *  the that entry's reference count.
+ * 
+ */
+__attribute__((nonnull(1)))
+static struct table_entry_t* lookup_word(const char* word) {
+    struct table_entry_t* entry = hash_table[calculate_hash(word)];
+
+    while (entry) {
+        if (strings_match(word, entry->word)) {
+            return entry;
+        }
+
+        entry = entry->next;
+    }
+
+    return NULL;
+}
+
 __attribute__((nonnull(1), returns_nonnull))
 struct table_entry_t* add_word_to_table(const char* word) {
     struct table_entry_t* entry = lookup_word(word);
@@ -181,7 +190,7 @@ struct table_entry_t* add_word_to_table(const char* word) {
         ++entry->count2;
     }
 
-    if (entry->count1 && entry->count2) {
+    if (!processing_first_file()) {
         double entry_commonality_score = commonality(entry);
 
         if (entry_commonality_score > current_max) {

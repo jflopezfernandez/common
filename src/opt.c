@@ -148,6 +148,14 @@ const char** parse_command_line_options(int argc, char *argv[]) {
                 } break;
             }
         } else {
+            /** Before adding the file to the parameter list, verify it exists.
+             * 
+             */
+            if (!file_exists(argv[i])) {
+                fprintf(stderr, "[Error] %s (%s)\n", "The specified file does not exist:", argv[i]);
+                exit(EXIT_FAILURE);
+            }
+            
             add_argument(argv[i]);
         }
     }
