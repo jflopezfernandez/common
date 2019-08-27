@@ -15,6 +15,7 @@
  *  'strcmp'.
  * 
  */
+__attribute__((hot, nonnull(1,2)))
 int strings_match(const char* a, const char* b);
 
 #ifndef NUL

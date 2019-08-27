@@ -6,6 +6,7 @@
  *  thus guarantees that the return value of this function will not be null.
  * 
  */
+__attribute__((nonnull(1,2), returns_nonnull))
 FILE* open_file(const char* filename, const char* mode) {
     FILE* file = fopen(filename, mode);
 
@@ -23,6 +24,7 @@ FILE* open_file(const char* filename, const char* mode) {
  *  exclusively for reading.
  * 
  */
+__attribute__((nonnull(1), returns_nonnull))
 FILE* open_readonly_file(const char* filename) {
     return open_file(filename, "r");
 }
@@ -34,6 +36,7 @@ FILE* open_readonly_file(const char* filename) {
  *  succeeds.
  * 
  */
+__attribute__((nonnull(1)))
 void close_file(FILE* file) {
     if (fclose(file) == EOF) {
         fprintf(stderr, "Call to fclose() failed\n");

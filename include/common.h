@@ -18,6 +18,10 @@
 #include <limits.h>
 #include <inttypes.h>
 
+#include <sys/types.h>
+
+#include <unistd.h>
+
 #if !defined(FALSE) || !defined(TRUE)
 enum { FALSE = 0, TRUE = !FALSE };
 #endif // FALSE || TRUE
@@ -37,16 +41,6 @@ enum { FALSE = 0, TRUE = !FALSE };
 #include "mem.h"
 #include "opt.h"
 #include "str.h"
-
-/* TODO: Rebase */
-inline double geometric_mean(size_t a, size_t b) {
-    return sqrt(a * b);
-}
-
-/* TODO: Rebase */
-inline double commonality(struct table_entry_t* entry) {
-    return geometric_mean(entry->count1, entry->count2);
-}
 
 int processing_first_file(void);
 

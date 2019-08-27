@@ -14,10 +14,7 @@ struct table_entry_t {
     struct table_entry_t* next;
 };
 
-struct table_entry_t* add_word_to_table(char* word);
-
-typedef unsigned long long int hash_t;
-
-typedef hash_t (*hash_function)(const char*);
+__attribute__((hot, nonnull(1), returns_nonnull))
+struct table_entry_t* add_word_to_table(const char* word);
 
 #endif // PROJECT_INCLUDES_HASH_TABLE_H

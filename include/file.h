@@ -7,6 +7,7 @@
  *  thus guarantees that the return value of this function will not be null.
  * 
  */
+__attribute__((nonnull(1,2), returns_nonnull))
 FILE* open_file(const char* filename, const char* mode);
 
 /** This function is a wrapper around the open_file function interface; it
@@ -15,6 +16,7 @@ FILE* open_file(const char* filename, const char* mode);
  *  exclusively for reading.
  * 
  */
+__attribute__((nonnull(1), returns_nonnull))
 FILE* open_readonly_file(const char* filename);
 
 /** This function wraps calls to 'fclose', the return value of which is almost
@@ -24,6 +26,7 @@ FILE* open_readonly_file(const char* filename);
  *  succeeds.
  * 
  */
+__attribute__((nonnull(1)))
 void close_file(FILE* file);
 
 #endif // PROJECT_INCLUDES_FILE_H

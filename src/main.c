@@ -36,6 +36,12 @@ int processing_first_file(void) {
     return first_file;
 }
 
+/** This is the buffer responsible for streamlining disk-read operations as
+ *  much as possible. The buffer is 4096 bytes to match the sector size of most
+ *  modern hard drives. Reading in sector-aligned chunks is the most efficient
+ *  way of interacting with disk memory.
+ * 
+ */
 static char input_buffer[BUFFER_SIZE];
     
 #ifndef DELIMITERS
@@ -51,7 +57,7 @@ int main(int argc, char *argv[])
     char* token_reentrancy_pointer = NULL;
 
     while (TRUE) {
-        if (fgets(input_buffer, BUFSIZ, input_file) == NULL) {
+        if (fgets(input_buffer, BUFFER_SIZE, input_file) == NULL) {
             close_file(input_file);
 
             if (!first_file) {
@@ -64,7 +70,7 @@ int main(int argc, char *argv[])
 
             continue;
         }
-
+        
         char* word = strtok_r(input_buffer, DELIMITERS, &token_reentrancy_pointer);
 
         if (word == NULL) {

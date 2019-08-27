@@ -1,6 +1,10 @@
 
 #include "common.h"
 
+typedef unsigned long long int hash_t;
+
+typedef hash_t (*hash_function)(const char*);
+
 #ifndef HASH_MODULUS
 #define HASH_MODULUS (52379)
 #else
@@ -11,14 +15,15 @@
  *  the prototype going.
  * 
  */
-static size_t __attribute__((unused)) hash(const char* str) {
-    size_t h = 0;
+__attribute__((hot, nonnull(1), unused))
+static hash_t trivial_hash(const char* str) {
+    hash_t hash = 0;
 
     while (*str) {
-        h = (*str++) + 211 * h;
+        hash = (*str++) + 211 * hash;
     }
 
-    return h % HASH_MODULUS;
+    return hash % HASH_MODULUS;
 }
 
 /** Professor Robert Sedgewick's universal hash function for string keys, from
@@ -26,24 +31,26 @@ static size_t __attribute__((unused)) hash(const char* str) {
  *  necessary to iterate over the string to hash.
  * 
  */
-static hash_t __attribute__((unused)) basic_hash(const char* str) {
-    int h = 0x0000;
-    int a = 0x7ab7;
-    int b = 0x6a2f;
+__attribute__((nonnull(1), unused))
+static hash_t basic_hash(const char* str) {
+    hash_t hash = 0;
+    hash_t a = 63689;
+    hash_t b = 378551;
 
     while (*str) {
-        h = (a * h + *str++);
-        a = (a * b);
+        hash = (*str++) + a * hash;
+        a = a * b;
     }
 
-    return h % HASH_MODULUS;
+    return hash % HASH_MODULUS;
 }
 
 /** Hashing algorithm developed by Dr. Peter Weinberger and discussed at length
  *  in the dragon book.
  * 
  */
-static hash_t __attribute__((unused)) weinberger_hash(const char* str) {
+__attribute__((hot, nonnull(1)))
+static hash_t weinberger_hash(const char* str) {
     hash_t hash = 0x00;
     hash_t bits = 8 * sizeof (hash_t);
     hash_t three_fourths = (bits * 3) / 4;
@@ -81,6 +88,7 @@ const char* most_common_shared_word(void) {
 
 static struct table_entry_t *hash_table[HASH_MODULUS];
 
+__attribute__((hot, returns_nonnull))
 static struct table_entry_t* allocate_table_entry(void) {
     struct table_entry_t* entry = malloc(sizeof (struct table_entry_t));
 
@@ -92,7 +100,8 @@ static struct table_entry_t* allocate_table_entry(void) {
     return entry;
 }
 
-static struct table_entry_t* create_table_entry(char* word) {
+__attribute__((nonnull(1), returns_nonnull))
+static struct table_entry_t* create_table_entry(const char* word) {
     struct table_entry_t* entry = allocate_table_entry();
 
     entry->count1 = 0;
@@ -107,7 +116,8 @@ static struct table_entry_t* create_table_entry(char* word) {
     return entry;
 }
 
-static struct table_entry_t* lookup_word(char* word) {
+__attribute__((nonnull(1)))
+static struct table_entry_t* lookup_word(const char* word) {
     struct table_entry_t* entry = hash_table[calculate_hash(word)];
 
     while (entry) {
@@ -121,7 +131,18 @@ static struct table_entry_t* lookup_word(char* word) {
     return NULL;
 }
 
-struct table_entry_t* add_word_to_table(char* word) {
+__attribute__((hot, pure))
+static inline double geometric_mean(size_t a, size_t b) {
+    return sqrt(a * b);
+}
+
+__attribute__((hot, nonnull(1)))
+static inline double commonality(struct table_entry_t* entry) {
+    return geometric_mean(entry->count1, entry->count2);
+}
+
+__attribute__((nonnull(1), returns_nonnull))
+struct table_entry_t* add_word_to_table(const char* word) {
     struct table_entry_t* entry = lookup_word(word);
 
     if (entry == NULL) {

@@ -15,7 +15,6 @@
  * 
  */
 static struct option_t options[] = {
-    { OPTION_TOP_N  , "-N", NONE       , "Show the top N strings files 1 and 2 have in common." },
     { OPTION_HELP   , "-h", "--help"   , "Display this help menu and exit"                      },
     { OPTION_VERSION, NONE, "--version", "Display program version info and exit"                },
     { OPTION_VERBOSE, "-v", "--verbose", "Display detailed info during program execution"       }
@@ -35,6 +34,7 @@ static void print_options_help(void) {
     }
 }
 
+__attribute__((nonnull(1)))
 static option_id_t string_matches_program_option(const char* str) {
     for (size_t i = 0; i < number_of_program_options; ++i) {
         if (strings_match(options[i].short_option, str) || strings_match(options[i].long_option, str)) {
@@ -56,7 +56,6 @@ static void print_usage(message_type_t message_type) {
     fprintf((message_type) ? stderr : stdout, "%s\n", usage_str);
 }
 
-/* TODO: help_str */
 static const char* help_str = "Find the most common string shared between two files.";
 
 static void print_help(void) {
@@ -76,6 +75,7 @@ static const char** arguments = NULL;
 
 static size_t number_of_non_option_arguments = 0;
 
+__attribute__((hot, nonnull(1)))
 static void add_argument(const char* argument) {
     /** The program specification calls for accepting two and only two
      *  filename arguments. While this seems a little arbitrary, The Spec's
