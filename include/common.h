@@ -40,11 +40,14 @@ enum { FALSE = 0, TRUE = !FALSE };
 #endif // FALSE || TRUE
 
 #ifndef BUFFER_SIZE
-/** This buffer size was chosen because modern hard drives have sectors 4096
- *  bytes long, making this the most efficient size for buffered IO.
+/** The initial buffer size of 4096 was chosen because to align with most
+ *  modern hard drives, which have sectors exactly that long. That is the most
+ *  efficient atomic unit, but profiling showed the sequential reads being
+ *  performed here mean a much larger buffer size, 64Kb in this case, is
+ *  actually beneficial.
  * 
  */
-#define BUFFER_SIZE (4096)
+#define BUFFER_SIZE (65536)
 #else
 #error "BUFFER_SIZE already defined."
 #endif // BUFFER_SIZE

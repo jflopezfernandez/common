@@ -15,7 +15,7 @@ typedef hash_t (*hash_function)(const char*);
  *  the prototype going. It is marked with the 'unused' attribute because I
  *  haven't implemented the ability to switch hash functions after compilation,
  *  and the weinberg hash function has proven much more robust, with a
- *  negligible amount of collisions during testing.
+ *  negligible amount of hash collisions during testing.
  * 
  */
 __attribute__((hot, nonnull(1), unused))
@@ -99,8 +99,7 @@ static struct table_entry_t* allocate_table_entry(void) {
     struct table_entry_t* entry = malloc(sizeof (struct table_entry_t));
 
     if (entry == NULL) {
-        fprintf(stderr, "Memory allocation failure in allocate_table_entry()\n");
-        exit(EXIT_FAILURE);
+        fatal_error("Memory allocation failure in allocate_table_entry()");
     }
 
     return entry;
@@ -115,8 +114,7 @@ static struct table_entry_t* create_table_entry(const char* word) {
     entry->word   = strdup(word);
 
     if (entry->word == NULL) {
-        fprintf(stderr, "Memory allocation failure in create_table_entry->strdup(word)\n");
-        exit(EXIT_FAILURE);
+        fatal_error("Memory allocation failure in create_table_entry->strdup(word)");
     }
 
     return entry;

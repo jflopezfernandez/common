@@ -24,11 +24,20 @@ Display program version information and exit.
 .TP
 .BR \-v ", " \-\-verbose
 Display detailed info during program execution.
+.SH NOTES
+The current implementation is pretty CPU-throttled, as I wasn't at all happy
+with the implementation I wrote using pthreads, but due to time constraints I
+decided to simply rip out the whole thing and replace with with a simple
+single-processor sequential-read. What it lacks in complexity it makes up for
+in speed though. It correctly processed two files six gigabytes each in about
+five minutes. That's actually a little better than the results I was getting
+by memory-mapping the input like I initially tried, which I must admit was
+surprising.
 .SH SEE ALSO
 .BR strtok_r(3)
-.SH NOTES
 .SH AUTHOR
 Jose Fernando Lopez Fernandez <jflopezfernandez@gmail.com>
 .SH BUGS
-None reported as of 26 August, 2019.
-
+The
+.B \-\-verbose
+command-line option does absolutely nothing right now.

@@ -1,4 +1,9 @@
 
+SHELL    = /bin/sh
+
+.SUFFIXES:
+.SUFFIXES: .c .o
+
 vpath %.1 man
 vpath %.c src
 vpath %.h include
@@ -15,32 +20,35 @@ INSTFLAGS= --strip --target-directory=$(PREFIX)$(BINDIR)
 NM       = nm
 NMOPTS   = --extern-only --defined-only -v --print-file-name
 
+STRIP    = strip
+STRIPOPTS= --strip-all
+
 SRCS     = $(wildcard src/*.c)
 OBJS     = $(patsubst %.c,%.o,$(notdir $(SRCS)))
+ASMLISTS = $(patsubst %.c,%.asm,$(notdir $(SRCS)))
 
 MANPAGE  = $(wildcard man/*.1)
 
 MAPFILE  = map.file
 
 CC       = gcc
-# gcov
-# CFLAGS   = -std=c99 -Wall -Wextra -Wpedantic -mtune=intel -march=sandybridge \
-#            -g -pg --coverage -fsave-optimization-record \
-#            -fdiagnostics-color=always -fprofile \
-#            -fprofile-arcs -fprofile-correction -fprofile-generate \
-#            -fprofile-report -fprofile-use -fprofile-values -freorder-blocks \
-#            -freorder-blocks-algorithm=stc -freorder-blocks-and-partition \
-#            -freorder-functions -frename-registers -frerun-cse-after-loop \
-#            -ggdb -ginline-points -grecord-gcc-switches -gdescribe-dies \
-#            -gvariable-location-views -p -gstatement-frontiers \
-#            -fdiagnostics-show-option \
-#            -ftest-coverage -ftime-report -ftime-report-details -ftracer \
-#            -ftrampolines -fvar-tracking -fvar-tracking-assignments \
-#            -fvar-tracking-uninit -fverbose-asm
-# gprof
-# CFLAGS   = -std=c99 -Wall -Wextra -Wpedantic -O3 -mtune=intel -march=sandybridge -g -pg
-# Release
-CFLAGS   = -std=c99 -Wall -Wextra -Wpedantic -g -ggdb -O0
+CFLAGS   = -std=c99 -Wall -Wextra -Wpedantic -Ofast -mtune=intel \
+           -march=sandybridge -fmerge-all-constants -fmodulo-sched \
+           -fmodulo-sched-allow-regmoves -fgcse-sm -fgcse-las \
+           -fselective-scheduling -fsel-sched-pipelining \
+           -fsel-sched-pipelining-outer-loops -fsemantic-interposition \
+           -fipa-pta -fisolate-erroneous-paths-attribute \
+           -ftree-parallelize-loops=16 -ftree-vrp \
+           -fvariable-expansion-in-unroller -flto -fwhole-program \
+           -funsafe-math-optimizations -fassociative-math -freciprocal-math \
+           -ffinite-math-only -fno-trapping-math -fno-signaling-nans \
+           -fno-fp-int-builtin-inexact -fsingle-precision-constant \
+           -fcx-fortran-rules -fbranch-target-load-optimize \
+           -fbranch-target-load-optimize2 -fbtr-bb-exclusive -fstdarg-opt \
+           --param l1-cache-size=64 --param l2-cache-size=256 \
+           --param allow-store-data-races=1 -fno-asynchronous-unwind-tables \
+           -fno-gnu-unique -fshort-enums \
+           -fno-strict-volatile-bitfields 
 CPPFLAGS = -D_POSIX_C_SOURCE -D_POSIX_THREADS -D_GNU_SOURCE -D_XOPEN_SOURCE=700
 LDFLAGS  = -O
 LIBS     = -lm -pthread
@@ -52,7 +60,7 @@ GROFFPDF = -Tpdf -man
 PAGER    = less
 
 GPROF    = gprof
-GPROFOPTS= # -b -C --file-info -p -q -a -c -z
+GPROFOPTS= 
 PROFILE  = gmon.out
 PROFAGGR = gmon.sum
 
@@ -67,14 +75,11 @@ TESTSRCS = $(wildcard tests/*.c)
 TESTOBJS = $(patsubst %.c,%.o,$(notdir $(TESTSRCS)))
 TESTS    = $(basename $(TESTOBJS))
 
-all: notify-building-all | release documentation
-	
-.PHONY: notify-building-all
-notify-building-all:
-	@echo -e "Building release executable and documentation..."
+all: release
 
 .PHONY: release
 release: $(TARGET)
+	$(STRIP) $(STRIPOPTS) $^
 
 .PHONY: debug
 debug: $(TARGET)
@@ -84,6 +89,15 @@ $(TARGET): $(OBJS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -I include -c -o $@ $^
+
+assembly-listings: $(ASMLISTS)
+
+%.asm: %.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -I include -S -o $@ $^ -masm=intel
+
+.PHONY: clean-assembly-listings
+clean-assembly-listings:
+	$(RM) $(ASMLISTS)
 
 .PHONY: mapfile
 mapfile: $(TARGET)
@@ -162,7 +176,7 @@ clean:
 	$(RM) $(OBJS) $(TARGET)
 
 .PHONY: clean-all
-clean-all: clean clean-mapfile clean-gcov clean-profile clean-tests
+clean-all: clean clean-mapfile clean-gcov clean-profile clean-tests clean-assembly-listings
 
 .PHONY: install
 install: $(TARGET)
@@ -174,10 +188,11 @@ uninstall:
 
 .PHONY: help
 help:
-	@echo -e "Available targets: "
-	@echo -e "    all            "
-	@echo -e "    documentation  "
-	@echo -e "    pdf            "
-	@echo -e "    view-manpage   "
-	@echo -e "    profile        "
-	@echo -e "    reprofile      "
+	@echo -e "Available targets:  "
+	@echo -e "    all             "
+	@echo -e "    documentation   "
+	@echo -e "    pdf             "
+	@echo -e "    view-manpage    "
+	@echo -e "    profile         "
+	@echo -e "    reprofile       "
+	@echo -e "    assembly-listings"

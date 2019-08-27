@@ -1,0 +1,24 @@
+ Performance counter stats for './common data/testfile data/testfile1':
+
+               734      context-switches          #    0.004 K/sec                  
+        178,322.00 msec cpu-clock                 #    1.000 CPUs utilized          
+   178,382,828,785 ns   duration_time             # 1000.341 M/sec                  
+            12,395      page-faults               #    0.070 K/sec                  
+    92,002,713,895      L1-dcache-loads           #  515.936 M/sec                    (44.44%)
+    13,125,392,658      L1-dcache-load-misses     #   14.27% of all L1-dcache hits    (44.45%)
+     6,231,216,305      LLC-loads                 #   34.944 M/sec                    (44.45%)
+     1,216,906,904      LLC-load-misses           #   19.53% of all LL-cache hits     (44.45%)
+   <not supported>      L1-icache-loads                                             
+        80,795,485      L1-icache-load-misses                                         (44.45%)
+    91,930,186,501      dTLB-loads                #  515.529 M/sec                    (44.44%)
+     2,389,487,198      dTLB-load-misses          #    2.60% of all dTLB cache hits   (44.44%)
+            68,172      iTLB-loads                #    0.382 K/sec                    (44.44%)
+           714,618      iTLB-load-misses          # 1048.26% of all iTLB cache hits   (44.44%)
+   <not supported>      L1-dcache-prefetches                                        
+   <not supported>      L1-dcache-prefetch-misses                                   
+
+     178.382828785 seconds time elapsed
+
+     177.291843000 seconds user
+       0.591773000 seconds sys
+

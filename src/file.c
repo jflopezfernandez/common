@@ -13,7 +13,7 @@ int file_exists(const char* filename) {
 
     if (access(filename, R_OK) == -1) {
         switch (errno) {
-            case EBADF: return FALSE;
+            case EBADF:  return FALSE;
             case ENOENT: return FALSE;
 
             case EACCES:        /* Fallthrough */
