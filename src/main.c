@@ -50,27 +50,24 @@ static char input_buffer[BUFFER_SIZE];
 
 int main(int argc, char *argv[])
 {
-    const char** filenames = parse_command_line_options(argc, argv);
+    while (*++argv) {
+        printf("%12s: %s\n", *argv, (file_exists(*argv) ? "exists" : "does not exist"));
+    }
 
-    FILE* input_file = open_readonly_file(*filenames++);
+    return EXIT_SUCCESS;
+
+    const char** filenames = parse_command_line_options(argc, argv);
 
     char* token_reentrancy_pointer = NULL;
 
-    while (TRUE) {
-        if (fgets(input_buffer, BUFFER_SIZE, input_file) == NULL) {
-            close_file(input_file);
+PROCESS_NEXT_FILE:
+    errno = 0;
+    
+    int input_file_descriptor = open_file_descriptor(*filenames++, O_RDONLY);
 
-            if (!first_file) {
-                break;
-            }
+    ssize_t bytes_read = 0;
 
-            first_file = FALSE;
-
-            input_file = open_readonly_file(*filenames);
-
-            continue;
-        }
-        
+    while ((bytes_read = read(input_file_descriptor, input_buffer, BUFFER_SIZE))) {
         char* word = strtok_r(input_buffer, DELIMITERS, &token_reentrancy_pointer);
 
         if (word == NULL) {
@@ -84,6 +81,20 @@ int main(int argc, char *argv[])
         }
     }
 
+    close_file_descriptor(input_file_descriptor);
+
+    if (first_file) {
+        first_file = FALSE;
+
+        goto PROCESS_NEXT_FILE;
+    }
+
+    /** This is the grand-finale; should there exist a string commonly found
+     *  in both input files, the most_common_shared_word function will evaluate
+     *  to true (as it is a pointer to said word), and the printf function will
+     *  subsequently print it for the user.
+     * 
+     */
     if (most_common_shared_word()) {
         printf("%s\n", most_common_shared_word());
     }

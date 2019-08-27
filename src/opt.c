@@ -22,6 +22,19 @@ static struct option_t options[] = {
 
 static size_t number_of_program_options = sizeof (options) / sizeof (options[0]);
 
+/** This function takes care of automatically printing and correctly formatting
+ *  the available program command-line options using only the options struct.
+ * 
+ *  Currently the help menu looks as follows:
+ * 
+ *    Usage: common [OPTIONS...] FILE1 FILE2
+ *    Find the most common string shared between two files.
+ *
+ *        -h, --help                   Display this help menu and exit
+ *            --version                Display program version info and exit
+ *        -v, --verbose                Display detailed info during program execution
+ * 
+ */
 static void print_options_help(void) {
     for (size_t i = 0; i < number_of_program_options; ++i) {
         const char* short_option_delimiter = ",";
@@ -45,12 +58,12 @@ static option_id_t string_matches_program_option(const char* str) {
     return OPTION_NONE;
 }
 
-static const char* usage_str = "Usage: common [OPTIONS...] FILE1 FILE2";
-
 typedef enum {
     NORMAL,
     ERROR
 } message_type_t;
+
+static const char* usage_str = "Usage: common [OPTIONS...] FILE1 FILE2";
 
 static void print_usage(message_type_t message_type) {
     fprintf((message_type) ? stderr : stdout, "%s\n", usage_str);
@@ -105,6 +118,14 @@ static void add_argument(const char* argument) {
     }
 }
 
+/** This is the main driver function for taking care of parsing command-line
+ *  arguments. The original argument vector is clobbered by the function for
+ *  simplicity. Specifically, nothing really happens to argv, but the any
+ *  non-option are passed to main via the string array returned by this
+ *  function. The program spec limits this array to a size of exactly two, but
+ *  this limit is arbitrary.
+ * 
+ */
 const char** parse_command_line_options(int argc, char *argv[]) {
     for (int i = 1; i < argc; ++i) {
         option_id_t option_id = string_matches_program_option(argv[i]);

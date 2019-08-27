@@ -129,8 +129,15 @@ check-str: check-str.o str.o
 check-str.o: check-str.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -I include -c -o $@ $^ $(LDFLAGS)
 
+check-file-exists: check-file-exists.o file.o
+	$(CC) $(CFLAGS) $(CPPFLAGS) -I include    -o $@ $^ $(LDFLAGS) -lcheck
+
+check-file-exists.o: check-file-exists.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -I include -c -o $@ $^ $(LDFLAGS)
+
 .PHONY: check
 check: tests
+	@./check-file-exists
 	@./check-str
 
 .PHONY: clean-tests

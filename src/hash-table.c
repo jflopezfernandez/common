@@ -12,7 +12,10 @@ typedef hash_t (*hash_function)(const char*);
 #endif // HASH_MODULUS
 
 /** The most basic hash function known to man. Used literally just for getting
- *  the prototype going.
+ *  the prototype going. It is marked with the 'unused' attribute because I
+ *  haven't implemented the ability to switch hash functions after compilation,
+ *  and the weinberg hash function has proven much more robust, with a
+ *  negligible amount of collisions during testing.
  * 
  */
 __attribute__((hot, nonnull(1), unused))
@@ -30,12 +33,15 @@ static hash_t trivial_hash(const char* str) {
  *  Algorithms in C page 579. I elided the length argument, as it isn't
  *  necessary to iterate over the string to hash.
  * 
+ *  This function is also marked 'unused' to indicate that I have not yet
+ *  implemented the functionality to switch hash functions after compilation.
+ * 
  */
 __attribute__((nonnull(1), unused))
 static hash_t basic_hash(const char* str) {
     hash_t hash = 0;
-    hash_t a = 63689;
-    hash_t b = 378551;
+    hash_t    a = 63689;
+    hash_t    b = 378551;
 
     while (*str) {
         hash = (*str++) + a * hash;
@@ -131,14 +137,30 @@ static struct table_entry_t* lookup_word(const char* word) {
     return NULL;
 }
 
+/** This function calculates the geometric mean of two real numbers in the
+ *  expected manner: it multiplies the two numbers together and takes the
+ *  square root.
+ * 
+ *  This function is used to calculate what I called the 'commonality' of the
+ *  strings in the input files. To differentiate between many repeated
+ *  appearances of a string in one file while barely any in the other, the
+ *  geometric mean will score more favorably by a string that has about equal
+ *  representation in both files, rather than one over the other.
+ * 
+ */
 __attribute__((hot, pure))
-static inline double geometric_mean(size_t a, size_t b) {
+static inline double geometric_mean(double a, double b) {
     return sqrt(a * b);
 }
 
+/** This function implicitly casts the entry parameters to real numbers and
+ *  calls the geometric_mean function to calculate the commonality score for
+ *  the given string.
+ * 
+ */
 __attribute__((hot, nonnull(1)))
 static inline double commonality(struct table_entry_t* entry) {
-    return geometric_mean(entry->count1, entry->count2);
+    return geometric_mean((double) entry->count1, (double) entry->count2);
 }
 
 __attribute__((nonnull(1), returns_nonnull))

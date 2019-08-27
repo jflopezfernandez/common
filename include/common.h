@@ -18,7 +18,11 @@
 #include <limits.h>
 #include <inttypes.h>
 
+#include <sys/mman.h>
+#include <sys/param.h>
 #include <sys/types.h>
+
+#include <fcntl.h>
 
 #include <unistd.h>
 
