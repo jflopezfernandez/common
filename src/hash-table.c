@@ -131,9 +131,25 @@ static struct table_entry_t* create_table_entry(const char* word) {
  *  representation in both files, rather than one over the other.
  * 
  */
-__attribute__((hot, pure))
-static inline double geometric_mean(double a, double b) {
+__attribute__((hot, pure, unused))
+static double geometric_mean(double a, double b) {
     return sqrt(a * b);
+}
+
+/** This function calculates the harmonic mean of two real numbers in the
+ *  expected manner: it multiplies the two numbers together and takes the
+ *  square root.
+ * 
+ *  This function is also used to calculate the commonality of the strings in
+ *  the input files, with the difference being that a higher priority is given
+ *  to strings that appeared in high amounts in both files, rather than
+ *  a lot in one file and maybe once in the other, which is a weakness with the
+ *  geometric mean metric.
+ * 
+ */
+__attribute((hot, pure))
+static double harmonic_mean(double a, double b) {
+    return 2.0 / ((1.0 / a) + (1.0 / b));
 }
 
 /** This function implicitly casts the entry parameters to real numbers and
@@ -142,8 +158,8 @@ static inline double geometric_mean(double a, double b) {
  * 
  */
 __attribute__((hot, nonnull(1)))
-static inline double commonality(struct table_entry_t* entry) {
-    return geometric_mean((double) entry->count1, (double) entry->count2);
+static inline double commonality(struct table_entry_t* entry, double (*metric_function)(double,double)) {
+    return metric_function((double) entry->count1, (double) entry->count2);
 }
 
 /** This function takes care of hashing the current string and returning the
@@ -189,7 +205,7 @@ struct table_entry_t* add_word_to_table(const char* word) {
     }
 
     if (!processing_first_file()) {
-        double entry_commonality_score = commonality(entry);
+        double entry_commonality_score = commonality(entry, harmonic_mean);
 
         if (entry_commonality_score > current_max) {
             current_max = entry_commonality_score;
