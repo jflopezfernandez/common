@@ -58,6 +58,12 @@ struct thread_arguments_t* create_thread_arguments(const char* filename, int fil
 
     return thread_arguments;
 }
+
+__attribute__((nonnull(1)))
+static inline void free_thread_arguments(struct thread_arguments_t* thread_arguments) {
+    FREE(thread_arguments->filename);
+    FREE(thread_arguments);
+}
    
 #ifndef DELIMITERS
 #define DELIMITERS " \n\t!\"#$%&'()*+,-./:;<=>?@[\\]^_`}|{~"
@@ -178,10 +184,9 @@ int main(int argc, char *argv[])
      *  prevents double-freeing heap-allocated memory.
      * 
      */
-    FREE(t1_args->filename);
-    FREE(t1_args);
-    FREE(t2_args->filename);
-    FREE(t2_args);
+    free_thread_arguments(t1_args);
+    free_thread_arguments(t2_args);
+
     FREE(filenames[0]);
     FREE(filenames[1]);
     FREE(filenames);
