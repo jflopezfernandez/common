@@ -63,16 +63,6 @@ struct thread_arguments_t* create_thread_arguments(const char* filename, int fil
 #define DELIMITERS " \n\t!\"#$%&'()*+,-./:;<=>?@[\\]^_`}|{~"
 #endif
 
-/** This is the buffer responsible for streamlining disk-read operations as
- *  much as possible. The buffer is 64kb long to benefit as much as possible
- *  from the sequential read that's going on in this admittedly contrived
- *  example, but generally speaking, the buffer size should always be a
- *  multiple of the sector size of the hard drive, as reading in sector-aligned
- *  chunks is the most efficient way of maximizing disk throughput.
- * 
- */
-// static char input_buffer[BUFFER_SIZE];
-
 void* thread_process_file(void* arg) {
     /** This is the buffer responsible for streamlining disk-read operations as
      *  much as possible. The buffer is 4kb long to benefit as much as possible
