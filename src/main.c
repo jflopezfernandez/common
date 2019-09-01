@@ -35,7 +35,7 @@ struct thread_arguments_t {
     int file;
 };
 
-struct thread_arguments_t* allocate_thread_arguments(void) {
+static inline struct thread_arguments_t* allocate_thread_arguments(void) {
     struct thread_arguments_t* thread_arguments = malloc(sizeof (struct thread_arguments_t));
 
     if (thread_arguments == NULL) {
