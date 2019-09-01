@@ -106,7 +106,7 @@ static struct table_entry_t *hash_table[HASH_MODULUS];
 /** This is the mutex for the hash table.
  * 
  */
-static pthread_mutex_t hash_table_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_rwlock_t hash_table_lock = PTHREAD_RWLOCK_INITIALIZER;
 
 __attribute__((hot, returns_nonnull))
 static struct table_entry_t* allocate_table_entry(void) {
@@ -132,7 +132,7 @@ static struct table_entry_t* create_table_entry(const char* word) {
         fatal_error("Memory allocation failure in create_table_entry->strdup(word)");
     }
 
-    if (pthread_mutex_init(&entry->lock, NULL)) {
+    if (pthread_rwlock_init(&entry->lock, NULL)) {
         fatal_error("Failed to dynamically initialize entry mutex");
     }
 
@@ -196,7 +196,7 @@ __attribute__((nonnull(1)))
 static struct table_entry_t* lookup_word(const char* word) {
     struct table_entry_t* entry = hash_table[calculate_hash(word)];
 
-    pthread_mutex_lock(&hash_table_lock);
+    pthread_rwlock_rdlock(&hash_table_lock);
 
     while (entry) {
         if (strings_match(word, entry->word)) {
@@ -206,13 +206,13 @@ static struct table_entry_t* lookup_word(const char* word) {
         entry = entry->next;
     }
 
-    pthread_mutex_unlock(&hash_table_lock);
+    pthread_rwlock_unlock(&hash_table_lock);
 
     return entry;
 }
 
 static inline void increment_reference_count(struct table_entry_t* entry, int file) {
-    pthread_mutex_lock(&entry->lock);
+    pthread_rwlock_wrlock(&entry->lock);
 
     if (file == 1) {
         ++entry->count1;
@@ -222,7 +222,7 @@ static inline void increment_reference_count(struct table_entry_t* entry, int fi
         fatal_error("Invalid file number");
     }
 
-    pthread_mutex_unlock(&entry->lock);
+    pthread_rwlock_unlock(&entry->lock);
 }
 
 static inline void calculate_commonality_score(struct table_entry_t* entry) {
@@ -266,11 +266,11 @@ struct table_entry_t* add_word_to_table(const char* word, int file) {
     if (entry == NULL) {
         entry = create_table_entry(word);
 
-        pthread_mutex_lock(&hash_table_lock);
+        pthread_rwlock_wrlock(&hash_table_lock);
         size_t hashval = calculate_hash(entry->word);
         entry->next = hash_table[hashval];
         hash_table[hashval] = entry;
-        pthread_mutex_unlock(&hash_table_lock);
+        pthread_rwlock_unlock(&hash_table_lock);
     }
 
     increment_reference_count(entry, file);
@@ -291,7 +291,7 @@ void release_table_resources(void) {
                 next = entry->next;
             }
 
-            pthread_mutex_destroy(&entry->lock);
+            pthread_rwlock_destroy(&entry->lock);
 
             FREE(entry->word);
             FREE(entry);

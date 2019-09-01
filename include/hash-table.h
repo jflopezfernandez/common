@@ -23,7 +23,7 @@ struct table_entry_t {
     char* word;
     size_t count1;
     size_t count2;
-    pthread_mutex_t lock;
+    pthread_rwlock_t lock;
     struct table_entry_t* next;
 };
 
