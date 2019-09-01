@@ -139,10 +139,6 @@ char** parse_command_line_options(int argc, char *argv[]) {
                     int threads = atoi(argv[++i]);
                     settings_set_threads(threads);
                     number_of_threads_specified = TRUE;
-
-                    if (settings_get_verbose()) {
-                        printf("Threads: %d\n", settings_get_threads());
-                    }
                 } break;
 
                 case OPTION_HELP: {
@@ -184,6 +180,14 @@ char** parse_command_line_options(int argc, char *argv[]) {
      */
     if (number_of_threads_specified == FALSE) {
         settings_set_threads(2);
+    }
+
+    /** If the user elected to receive verbose execution information, let them
+     *  know how many threads will be used.
+     * 
+     */
+    if (settings_get_verbose()) {
+        printf("Threads: %d\n", settings_get_threads());
     }
 
     /** Having finished iterating through all the command-line arguments, if
