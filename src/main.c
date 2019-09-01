@@ -113,7 +113,17 @@ static inline void free_thread_arguments(struct thread_arguments_t* thread_argum
 #define DELIMITERS " \n\t!\"#$%&'()*+,-./:;<=>?@[\\]^_`}|{~"
 #endif
 
+static off_t f1_offset = 0;
+
+static pthread_mutex_t f1_lock = PTHREAD_MUTEX_INITIALIZER;
+
+static off_t f2_offset = 0;
+
+static pthread_mutex_t f2_lock = PTHREAD_MUTEX_INITIALIZER;
+
 void* thread_process_file(void* arg) {
+    struct thread_arguments_t* thread_arguments = (struct thread_arguments_t *) arg;
+
     /** This is the buffer responsible for streamlining disk-read operations as
      *  much as possible. The buffer is 4kb long to benefit as much as possible
      *  from the sequential read that's going on in this admittedly contrived
@@ -125,7 +135,7 @@ void* thread_process_file(void* arg) {
      */
     char input_buffer[BUFFER_SIZE] = { 0 };
 
-    int input_file_descriptor = open_file_descriptor(((struct thread_arguments_t *) arg)->filename, O_RDONLY);
+    int input_file_descriptor = open_file_descriptor(thread_arguments->filename, O_RDONLY);
 
     /** Having parsed the command-line arguments and successfully opened the
      *  first of two files, we will now inform the kernel about the significant
@@ -146,8 +156,26 @@ void* thread_process_file(void* arg) {
 
     ssize_t bytes_read = 0;
 
-    while ((bytes_read = read(input_file_descriptor, input_buffer, BUFFER_SIZE))) {
-        if (bytes_read == -1) {
+    off_t current_offset = 0;
+
+    while (TRUE) {
+        if (thread_arguments->file == 1) {
+            pthread_mutex_lock(&f1_lock);
+            current_offset = f1_offset;
+            f1_offset += BUFFER_SIZE;
+            pthread_mutex_unlock(&f1_lock);
+        } else if (thread_arguments->file == 2) {
+            pthread_mutex_lock(&f2_lock);
+            current_offset = f2_offset;
+            f2_offset += BUFFER_SIZE;
+            pthread_mutex_unlock(&f2_lock);
+        } else {
+            fatal_error("Invalid file id");
+        }
+        
+        bytes_read = pread(input_file_descriptor, input_buffer, BUFFER_SIZE, current_offset);
+
+        if ((bytes_read == 0) || ((bytes_read == -1))) {
             break;
         }
 
@@ -158,6 +186,8 @@ void* thread_process_file(void* arg) {
         if (word == NULL) {
             continue;
         }
+
+        printf("%d %s\n", (int) pthread_self(), word);
 
         add_word_to_table(word, ((struct thread_arguments_t *) arg)->file);
 
