@@ -120,8 +120,17 @@ static struct table_entry_t *hash_table[HASH_MODULUS];
  */
 static pthread_rwlock_t hash_table_lock = PTHREAD_RWLOCK_INITIALIZER;
 
+/** This function's only purpose is to allocate the memory required by the
+ *  'struct table_entry_t' object, verifying the pointer returned by 'malloc',
+ *  and taking the appropriate steps if an invalid pointer is detected.
+ * 
+ *  In the current implementation, 'taking the appropriate steps' simply means
+ *  printing an error to standard error and exiting with an error status of
+ *  EXIT_FAILURE (usually defined as '1' by convention).
+ * 
+ */
 __attribute__((hot, returns_nonnull))
-static struct table_entry_t* allocate_table_entry(void) {
+static inline struct table_entry_t* allocate_table_entry(void) {
     struct table_entry_t* entry = malloc(sizeof (struct table_entry_t));
 
     if (entry == NULL) {
