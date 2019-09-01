@@ -35,6 +35,14 @@ struct thread_arguments_t {
     int file;
 };
 
+/** This function's only job is to allocate the memory required by the thread
+ *  arguments object. The function also ensures the pointer returned by the
+ *  call to malloc is valid, and if it isn't, the function prints an error
+ *  message to standard error and exits with a status code of EXIT_FAILURE. The
+ *  caller may be sure that execution beyond the call to this function will
+ *  take place if and only if the call is successful.
+ * 
+ */
 static inline struct thread_arguments_t* allocate_thread_arguments(void) {
     struct thread_arguments_t* thread_arguments = malloc(sizeof (struct thread_arguments_t));
 
