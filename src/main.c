@@ -252,6 +252,14 @@ int main(int argc, char *argv[])
     pthread_attr_t thread_attributes;
     pthread_attr_init(&thread_attributes);
     pthread_attr_setstacksize(&thread_attributes, PTHREAD_STACK_MIN);
+
+    /** The default guard size is usually the system page size. Depending on
+     *  how many threads the user requests, this could add up to a
+     *  computationally overhead. Program execution has been validated through
+     *  testing using both gcov and valgrind, so I'm disabling the thread
+     *  guard size feature.
+     * 
+     */
     pthread_attr_setguardsize(&thread_attributes, 0);
 
     for (int i = 0; i < threads_per_file; ++i) {
