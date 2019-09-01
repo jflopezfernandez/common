@@ -103,7 +103,13 @@ const char* most_common_shared_word(void) {
  */
 static struct table_entry_t *hash_table[HASH_MODULUS];
 
-/** This is the mutex for the hash table.
+/** This is the lock-based synchronization tool to ensure data coherence within
+ *  the hash table. The benefit of employing a reader-writer lock instead of a
+ *  mutex is that multiple threads may hold a lock in read mode, while a thread
+ *  requiring write-access enjoys the same semantics as a mutex. This reduces
+ *  the computational cost of two threads accessing the same hash table entry,
+ *  which is great because reading the hash table to see if a string exists is
+ *  one of the most common actions in the application.
  * 
  */
 static pthread_rwlock_t hash_table_lock = PTHREAD_RWLOCK_INITIALIZER;
