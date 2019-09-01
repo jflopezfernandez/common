@@ -225,6 +225,17 @@ static inline void increment_reference_count(struct table_entry_t* entry, int fi
     pthread_rwlock_unlock(&entry->lock);
 }
 
+/** The commonality score calculation has been modified to accept a function
+ *  pointer, allowing for the customization of program operation down the line.
+ *  I'm not actively working on this at the moment, but it is a possibility.
+ * 
+ *  The formula has been changed to the harmonic mean of the string counts in
+ *  the input files rather than the geometric mean. I initially thought
+ *  filtering zero values from the calculation would be much more involved, but
+ *  I simply set the calculation to be contingent on nonzero counts in both
+ *  input files, and the division by zero problem has been completely avoided.
+ * 
+ */
 static inline void calculate_commonality_score(struct table_entry_t* entry) {
     double entry_commonality_score = commonality(entry, harmonic_mean);
 
