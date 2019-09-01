@@ -88,7 +88,7 @@ void* thread_process_file(void* arg) {
      *  chunks is the most efficient way of maximizing disk throughput.
      * 
      */
-    char input_buffer[4096] = { 0 };
+    char input_buffer[BUFFER_SIZE] = { 0 };
 
     int input_file_descriptor = open_file_descriptor(((struct thread_arguments_t *) arg)->filename, O_RDONLY);
 
@@ -111,7 +111,7 @@ void* thread_process_file(void* arg) {
 
     ssize_t bytes_read = 0;
 
-    while ((bytes_read = read(input_file_descriptor, input_buffer, 4096))) {
+    while ((bytes_read = read(input_file_descriptor, input_buffer, BUFFER_SIZE))) {
         if (bytes_read == -1) {
             break;
         }
