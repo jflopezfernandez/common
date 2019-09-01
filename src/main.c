@@ -249,6 +249,11 @@ int main(int argc, char *argv[])
 
     struct thread_arguments_t* t1_args = create_thread_arguments(filenames[0], 1);
 
+    /** This pthread_attributes_t variable is used for configuring the
+     *  attributes on newly created threads, which is especially useful given
+     *  that we are automating the thread creation process below.
+     * 
+     */
     pthread_attr_t thread_attributes;
 
     /** Of the available configurable thread attributes, the only two I chose
