@@ -59,6 +59,12 @@ struct thread_arguments_t* create_thread_arguments(const char* filename, int fil
     return thread_arguments;
 }
 
+/** This function takes care of safely freeing the heap-allocated memory
+ *  resources used by the object pointed to by thread_arguments. The function
+ *  uses the 'FREE' macro defined in mem.h to call the safe_free function,
+ *  preventing the double-freeing of memory.
+ * 
+ */
 __attribute__((nonnull(1)))
 static inline void free_thread_arguments(struct thread_arguments_t* thread_arguments) {
     FREE(thread_arguments->filename);
