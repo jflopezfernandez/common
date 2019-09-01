@@ -60,6 +60,4 @@ enum { FALSE = 0, TRUE = !FALSE };
 #include "settings.h"
 #include "str.h"
 
-int processing_first_file(void);
-
 #endif // PROJECT_INCLUDES_COMMON_H
