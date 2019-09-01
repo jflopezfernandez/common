@@ -250,7 +250,20 @@ int main(int argc, char *argv[])
     struct thread_arguments_t* t1_args = create_thread_arguments(filenames[0], 1);
 
     pthread_attr_t thread_attributes;
+
+    /** Of the available configurable thread attributes, the only two I chose
+     *  to modify are the minimum stack size and the guard buffer size. I'm not
+     *  particularly keen on configuring the minimum stack address or the
+     *  detached state of created threads.
+     * 
+     */
     pthread_attr_init(&thread_attributes);
+
+    /** It's possible for there to be enough threads with big enough stacks to
+     *  require more memory than is available in the process' virtual memory
+     *  space.
+     * 
+     */
     pthread_attr_setstacksize(&thread_attributes, PTHREAD_STACK_MIN);
 
     /** The default guard size is usually the system page size. Depending on
