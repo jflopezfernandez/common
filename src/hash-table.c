@@ -211,6 +211,12 @@ static struct table_entry_t* lookup_word(const char* word) {
     return entry;
 }
 
+/** Each entry in the hash table has a reader-writer lock for data coherence.
+ *  The benefit of the reader-writer lock over a simple mutex is that multiple
+ *  threads can hold a read lock, minimizing the need for write locks, as they
+ *  are the real bottleneck of the operation.
+ * 
+ */
 static inline void increment_reference_count(struct table_entry_t* entry, int file) {
     pthread_rwlock_wrlock(&entry->lock);
 
