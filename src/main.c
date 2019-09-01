@@ -77,7 +77,7 @@ static inline struct thread_arguments_t* allocate_thread_arguments(void) {
  *  processed.
  * 
  */
-struct thread_arguments_t* create_thread_arguments(const char* filename, int file) {
+static inline struct thread_arguments_t* create_thread_arguments(const char* filename, int file) {
     struct thread_arguments_t* thread_arguments = allocate_thread_arguments();
 
     thread_arguments->filename = strdup(filename);
