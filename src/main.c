@@ -249,8 +249,13 @@ int main(int argc, char *argv[])
 
     struct thread_arguments_t* t1_args = create_thread_arguments(filenames[0], 1);
 
+    pthread_attr_t thread_attributes;
+    pthread_attr_init(&thread_attributes);
+    pthread_attr_setstacksize(&thread_attributes, PTHREAD_STACK_MIN);
+    pthread_attr_setguardsize(&thread_attributes, 0);
+
     for (int i = 0; i < threads_per_file; ++i) {
-        if (pthread_create(&threads[i], NULL, thread_process_file, t1_args)) {
+        if (pthread_create(&threads[i], &thread_attributes, thread_process_file, t1_args)) {
             fatal_error("Could not create new thread");
         }
     }
@@ -258,7 +263,7 @@ int main(int argc, char *argv[])
     struct thread_arguments_t* t2_args = create_thread_arguments(filenames[1], 2);
 
     for (int i = threads_per_file; i < total_threads; ++i) {
-        if (pthread_create(&threads[i], NULL, thread_process_file, t2_args)) {
+        if (pthread_create(&threads[i], &thread_attributes, thread_process_file, t2_args)) {
             fatal_error("Could not create thread");
         }
     }
@@ -297,6 +302,8 @@ int main(int argc, char *argv[])
     FREE(filenames[1]);
     FREE(filenames);
 
+    pthread_attr_destroy(&thread_attributes);
+    
     release_table_resources();
 
     return EXIT_SUCCESS;
