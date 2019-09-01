@@ -137,6 +137,19 @@ char** parse_command_line_options(int argc, char *argv[]) {
             switch (option_id) {
                 case OPTION_THREADS: {
                     int threads = atoi(argv[++i]);
+
+                    /** The total number of threads must be even, since an
+                     *  equal number of threads will be used for both files. If
+                     *  an odd number of threads is detected, increment the
+                     *  thread count by one and notify the user.
+                     * 
+                     */
+                    if (threads & 1) {
+                        fprintf(stderr, "%s\n", "Number of threads must be even");
+
+                        ++threads;
+                    }
+
                     settings_set_threads(threads);
                     number_of_threads_specified = TRUE;
                 } break;

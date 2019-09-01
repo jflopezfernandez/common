@@ -188,9 +188,9 @@ int main(int argc, char *argv[])
      */
     char** filenames = parse_command_line_options(argc, argv);
 
-    const int thread_count = settings_get_threads();
+    const int threads_per_file = settings_get_threads();
 
-    pthread_t* threads = malloc(2 * thread_count * sizeof (pthread_t));
+    pthread_t* threads = malloc(2 * threads_per_file * sizeof (pthread_t));
 
     if (threads == NULL) {
         fatal_error("Memory allocation failure in main()");
@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
 
     struct thread_arguments_t* t1_args = create_thread_arguments(filenames[0], 1);
 
-    for (int i = 0; i < thread_count; ++i) {
+    for (int i = 0; i < threads_per_file; ++i) {
         if (pthread_create(&threads[i], NULL, thread_process_file, t1_args)) {
             fatal_error("Could not create new thread");
         }
@@ -206,13 +206,13 @@ int main(int argc, char *argv[])
 
     struct thread_arguments_t* t2_args = create_thread_arguments(filenames[1], 2);
 
-    for (int i = thread_count; i < 2 * thread_count; ++i) {
+    for (int i = threads_per_file; i < 2 * threads_per_file; ++i) {
         if (pthread_create(&threads[i], NULL, thread_process_file, t2_args)) {
             fatal_error("Could not create thread");
         }
     }
 
-    for (int i = 0; i < 2 * thread_count; ++i) {
+    for (int i = 0; i < 2 * threads_per_file; ++i) {
         if (pthread_join(threads[i], NULL)) {
             fatal_error("Could not rejoin sub-threads");
         }
