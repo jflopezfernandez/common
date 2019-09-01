@@ -189,12 +189,16 @@ int main(int argc, char *argv[])
     char** filenames = parse_command_line_options(argc, argv);
 
     const int threads_per_file = settings_get_threads();
+    const int total_threads    = 2 * threads_per_file;
 
     pthread_t* threads = malloc(2 * threads_per_file * sizeof (pthread_t));
 
     if (threads == NULL) {
         fatal_error("Memory allocation failure in main()");
     }
+
+    pthread_barrier_t file_processing_barrier;
+    pthread_barrier_init(&file_processing_barrier, NULL, total_threads);
 
     struct thread_arguments_t* t1_args = create_thread_arguments(filenames[0], 1);
 
@@ -212,30 +216,13 @@ int main(int argc, char *argv[])
         }
     }
 
-    for (int i = 0; i < 2 * threads_per_file; ++i) {
-        if (pthread_join(threads[i], NULL)) {
-            fatal_error("Could not rejoin sub-threads");
-        }
-    }
-
-    // pthread_t t1;
-    // pthread_t t2;
-
-    // struct thread_arguments_t* t1_args = create_thread_arguments(filenames[0], 1);
-
-    // if (pthread_create(&t1, NULL, thread_process_file, t1_args)) {
-    //     fatal_error("Could not create new thread");
+    // for (int i = 0; i < 2 * threads_per_file; ++i) {
+    //     if (pthread_join(threads[i], NULL)) {
+    //         fatal_error("Could not rejoin sub-threads");
+    //     }
     // }
 
-    // struct thread_arguments_t* t2_args = create_thread_arguments(filenames[1], 2);
-
-    // if (pthread_create(&t2, NULL, thread_process_file, t2_args)) {
-    //     fatal_error("Could not create new thread");
-    // }
-
-    // if (pthread_join(t2, NULL) || pthread_join(t1, NULL)) {
-    //     fatal_error("Could not rejoin sub-threads");
-    // }
+    pthread_barrier_wait(&file_processing_barrier);
 
     /** This is the grand-finale; should there exist a string commonly found
      *  in both input files, the most_common_shared_word function will evaluate
