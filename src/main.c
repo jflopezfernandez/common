@@ -65,6 +65,18 @@ static inline struct thread_arguments_t* allocate_thread_arguments(void) {
     return thread_arguments;
 }
 
+/** This is the constructor for the thread arguments object. To invoke, the
+ *  caller must pass in both the name of the input file and the file number
+ *  designation. This is an arbitrary number (1 or 2) to distinguish the word
+ *  counts for the file. This allows for a simple calculation of the harmonic
+ *  mean using each count from both input files.
+ * 
+ *  A deep copy of the filename must be made via a call to strdup because the
+ *  filename pointer's data is sitting in the thread_process_file function's
+ *  input_buffer, which will be overwritten once the entire buffer has been
+ *  processed.
+ * 
+ */
 struct thread_arguments_t* create_thread_arguments(const char* filename, int file) {
     struct thread_arguments_t* thread_arguments = allocate_thread_arguments();
 
