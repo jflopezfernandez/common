@@ -104,6 +104,12 @@ static inline void free_thread_arguments(struct thread_arguments_t* thread_argum
 }
    
 #ifndef DELIMITERS
+/** These are the delimiters the strtok_r function will use to tokenize the
+ *  input buffer. The program spec indicated valid strings would be composed of
+ *  alphanumeric characters exclusively. These are all graphic non-alphanumeric
+ *  ASCII characters, plus space.
+ * 
+ */
 #define DELIMITERS " \n\t!\"#$%&'()*+,-./:;<=>?@[\\]^_`}|{~"
 #endif
 
