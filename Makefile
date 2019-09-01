@@ -32,24 +32,24 @@ MANPAGE  = $(wildcard man/*.1)
 MAPFILE  = map.file
 
 CC       = gcc
-CFLAGS   = -std=c99 -Wall -Wextra -Wpedantic -mtune=intel -march=sandybridge -g -ggdb -O0
-# CFLAGS   = -std=c99 -Wall -Wextra -Wpedantic -Ofast -mtune=intel \
-#            -march=sandybridge -fmerge-all-constants -fmodulo-sched \
-#            -fmodulo-sched-allow-regmoves -fgcse-sm -fgcse-las \
-#            -fselective-scheduling -fsel-sched-pipelining \
-#            -fsel-sched-pipelining-outer-loops -fsemantic-interposition \
-#            -fipa-pta -fisolate-erroneous-paths-attribute \
-#            -ftree-parallelize-loops=16 -ftree-vrp \
-#            -fvariable-expansion-in-unroller -flto -fwhole-program \
-#            -funsafe-math-optimizations -fassociative-math -freciprocal-math \
-#            -ffinite-math-only -fno-trapping-math -fno-signaling-nans \
-#            -fno-fp-int-builtin-inexact -fsingle-precision-constant \
-#            -fcx-fortran-rules -fbranch-target-load-optimize \
-#            -fbranch-target-load-optimize2 -fbtr-bb-exclusive -fstdarg-opt \
-#            --param l1-cache-size=64 --param l2-cache-size=256 \
-#            --param allow-store-data-races=1 -fno-asynchronous-unwind-tables \
-#            -fno-gnu-unique -fshort-enums \
-#            -fno-strict-volatile-bitfields 
+#CFLAGS   = -std=c99 -Wall -Wextra -Wpedantic -mtune=intel -march=sandybridge -g -ggdb -O0
+CFLAGS   = -std=c99 -Wall -Wextra -Wpedantic -Ofast -mtune=intel \
+           -march=sandybridge -fmerge-all-constants -fmodulo-sched \
+           -fmodulo-sched-allow-regmoves -fgcse-sm -fgcse-las \
+           -fselective-scheduling -fsel-sched-pipelining \
+           -fsel-sched-pipelining-outer-loops -fsemantic-interposition \
+           -fipa-pta -fisolate-erroneous-paths-attribute \
+           -ftree-parallelize-loops=16 -ftree-vrp \
+           -fvariable-expansion-in-unroller -flto -fwhole-program \
+           -funsafe-math-optimizations -fassociative-math -freciprocal-math \
+           -ffinite-math-only -fno-trapping-math -fno-signaling-nans \
+           -fno-fp-int-builtin-inexact -fsingle-precision-constant \
+           -fcx-fortran-rules -fbranch-target-load-optimize \
+           -fbranch-target-load-optimize2 -fbtr-bb-exclusive -fstdarg-opt \
+           --param l1-cache-size=64 --param l2-cache-size=256 \
+           --param allow-store-data-races=1 -fno-asynchronous-unwind-tables \
+           -fno-gnu-unique -fshort-enums \
+           -fno-strict-volatile-bitfields 
 CPPFLAGS = -D_POSIX_C_SOURCE -D_POSIX_THREADS -D_GNU_SOURCE -D_XOPEN_SOURCE=700
 LDFLAGS  = -O
 LIBS     = -lm -pthread

@@ -110,7 +110,7 @@ static inline void free_thread_arguments(struct thread_arguments_t* thread_argum
  *  ASCII characters, plus space.
  * 
  */
-#define DELIMITERS " \n\t!\"#$%&'()*+,-./:;<=>?@[\\]^_`}|{~"
+#define DELIMITERS " \n\t\"!#$%%&'()*+,-./:;<=>?@[\\]^_`}|{~"
 #endif
 
 static off_t f1_offset = 0;
@@ -186,8 +186,6 @@ void* thread_process_file(void* arg) {
         if (word == NULL) {
             continue;
         }
-
-        printf("%d %s\n", (int) pthread_self(), word);
 
         add_word_to_table(word, ((struct thread_arguments_t *) arg)->file);
 
