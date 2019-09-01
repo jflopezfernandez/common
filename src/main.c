@@ -30,12 +30,6 @@
 
 #include "common.h"
 
-static int first_file = TRUE;
-
-int processing_first_file(void) {
-    return first_file;
-}
-
 struct thread_arguments_t {
     const char* filename;
     int file;
