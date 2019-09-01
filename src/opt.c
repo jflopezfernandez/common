@@ -15,6 +15,7 @@
  * 
  */
 static struct option_t options[] = {
+    { OPTION_THREADS, "-j", "--threads", "Use this many threads per input file (default: 1)"    },
     { OPTION_HELP   , "-h", "--help"   , "Display this help menu and exit"                      },
     { OPTION_VERSION, NONE, "--version", "Display program version info and exit"                },
     { OPTION_VERBOSE, "-v", "--verbose", "Display detailed info during program execution"       }
