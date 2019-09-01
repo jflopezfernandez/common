@@ -184,12 +184,19 @@ int main(int argc, char *argv[])
         printf("%s\n", most_common_shared_word());
     }
 
+    /** The operating system will reclaim all process resources on termination,
+     *  but for housekeeping purposes -specifically for valgrind to give us the
+     *  okay on 0 bytes of heap memory in use at exit- I'm including these
+     *  cleanup functions.
+     * 
+     *  The FREE macro calls the safe_free function defined in mem.h and
+     *  prevents double-freeing heap-allocated memory.
+     * 
+     */
     FREE(t1_args->filename);
-    FREE(t2_args->filename);
-
     FREE(t1_args);
+    FREE(t2_args->filename);
     FREE(t2_args);
-
     FREE(filenames[0]);
     FREE(filenames[1]);
     FREE(filenames);
