@@ -128,6 +128,8 @@ static void add_argument(const char* argument) {
  * 
  */
 char** parse_command_line_options(int argc, char *argv[]) {
+    int number_of_threads_specified = FALSE;
+
     for (int i = 1; i < argc; ++i) {
         option_id_t option_id = string_matches_program_option(argv[i]);
 
@@ -136,6 +138,7 @@ char** parse_command_line_options(int argc, char *argv[]) {
                 case OPTION_THREADS: {
                     int threads = atoi(argv[++i]);
                     settings_set_threads(threads);
+                    number_of_threads_specified = TRUE;
 
                     if (settings_get_verbose()) {
                         printf("Threads: %d\n", settings_get_threads());
@@ -172,6 +175,15 @@ char** parse_command_line_options(int argc, char *argv[]) {
             
             add_argument(argv[i]);
         }
+    }
+
+    /** If the user did not specify the number of threads to use, resort to the
+     *  default, which would ideally be defined in a common or logical place,
+     *  but for the time being is just set here.
+     * 
+     */
+    if (number_of_threads_specified == FALSE) {
+        settings_set_threads(2);
     }
 
     /** Having finished iterating through all the command-line arguments, if

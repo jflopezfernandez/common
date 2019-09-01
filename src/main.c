@@ -188,24 +188,54 @@ int main(int argc, char *argv[])
      */
     char** filenames = parse_command_line_options(argc, argv);
 
-    pthread_t t1;
-    pthread_t t2;
+    const int thread_count = settings_get_threads();
+
+    pthread_t* threads = malloc(2 * thread_count * sizeof (pthread_t));
+
+    if (threads == NULL) {
+        fatal_error("Memory allocation failure in main()");
+    }
 
     struct thread_arguments_t* t1_args = create_thread_arguments(filenames[0], 1);
 
-    if (pthread_create(&t1, NULL, thread_process_file, t1_args)) {
-        fatal_error("Could not create new thread");
+    for (int i = 0; i < thread_count; ++i) {
+        if (pthread_create(&threads[i], NULL, thread_process_file, t1_args)) {
+            fatal_error("Could not create new thread");
+        }
     }
 
     struct thread_arguments_t* t2_args = create_thread_arguments(filenames[1], 2);
 
-    if (pthread_create(&t2, NULL, thread_process_file, t2_args)) {
-        fatal_error("Could not create new thread");
+    for (int i = thread_count; i < 2 * thread_count; ++i) {
+        if (pthread_create(&threads[i], NULL, thread_process_file, t2_args)) {
+            fatal_error("Could not create thread");
+        }
     }
 
-    if (pthread_join(t2, NULL) || pthread_join(t1, NULL)) {
-        fatal_error("Could not rejoin sub-threads");
+    for (int i = 0; i < 2 * thread_count; ++i) {
+        if (pthread_join(threads[i], NULL)) {
+            fatal_error("Could not rejoin sub-threads");
+        }
     }
+
+    // pthread_t t1;
+    // pthread_t t2;
+
+    // struct thread_arguments_t* t1_args = create_thread_arguments(filenames[0], 1);
+
+    // if (pthread_create(&t1, NULL, thread_process_file, t1_args)) {
+    //     fatal_error("Could not create new thread");
+    // }
+
+    // struct thread_arguments_t* t2_args = create_thread_arguments(filenames[1], 2);
+
+    // if (pthread_create(&t2, NULL, thread_process_file, t2_args)) {
+    //     fatal_error("Could not create new thread");
+    // }
+
+    // if (pthread_join(t2, NULL) || pthread_join(t1, NULL)) {
+    //     fatal_error("Could not rejoin sub-threads");
+    // }
 
     /** This is the grand-finale; should there exist a string commonly found
      *  in both input files, the most_common_shared_word function will evaluate
