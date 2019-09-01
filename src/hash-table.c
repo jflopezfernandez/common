@@ -140,6 +140,20 @@ static inline struct table_entry_t* allocate_table_entry(void) {
     return entry;
 }
 
+/** This function initializes the table entry object returned by
+ *  'allocate_table_entry'. The allocation function will exit if an invalid
+ *  allocation is detected, so 'create_table_entry' can assume program
+ *  execution will continue if and only if entry allocation was successful. The
+ *  word counts are initialized by being set to zero, and a deep copy of the
+ *  string is made, as the input buffer in the process_file function will be
+ *  rewritten once it has been fully processed.
+ * 
+ *  The table entry's reader-writer lock must be dynamically initialized by
+ *  calling pthread_rwlock_init, passing the lock by reference, along with the
+ *  reader-writer lock attributes. At the moment, these attributes are being
+ *  left as the default, specified with NULL.
+ * 
+ */
 __attribute__((nonnull(1), returns_nonnull))
 static struct table_entry_t* create_table_entry(const char* word) {
     struct table_entry_t* entry = allocate_table_entry();
