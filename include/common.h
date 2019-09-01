@@ -57,6 +57,7 @@ enum { FALSE = 0, TRUE = !FALSE };
 #include "hash-table.h"
 #include "mem.h"
 #include "opt.h"
+#include "settings.h"
 #include "str.h"
 
 int processing_first_file(void);

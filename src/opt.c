@@ -133,6 +133,15 @@ char** parse_command_line_options(int argc, char *argv[]) {
 
         if (option_id) {
             switch (option_id) {
+                case OPTION_THREADS: {
+                    int threads = atoi(argv[++i]);
+                    settings_set_threads(threads);
+
+                    if (settings_get_verbose()) {
+                        printf("Threads: %d\n", settings_get_threads());
+                    }
+                } break;
+
                 case OPTION_HELP: {
                     print_help();
                     exit(EXIT_SUCCESS);
@@ -141,6 +150,10 @@ char** parse_command_line_options(int argc, char *argv[]) {
                 case OPTION_VERSION: {
                     print_version_info();
                     exit(EXIT_SUCCESS);
+                } break;
+
+                case OPTION_VERBOSE: {
+                    settings_set_verbose(TRUE);
                 } break;
 
                 default: {
