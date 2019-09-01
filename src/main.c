@@ -159,6 +159,22 @@ void* thread_process_file(void* arg) {
     off_t current_offset = 0;
 
     while (TRUE) {
+        /** Before performing any kind of read operations, we must first get
+         *  the file offset at which this thread is to begin reading from,
+         *  while at the same time incrementing the input file offset by the
+         *  buffer size so the next thread begins reading from the next sector.
+         * 
+         *  While I usually prefer reader-writer locks to mutexes, a
+         *  reader-writer lock gives us no additional functionality here. We
+         *  can't simply lock the global offset in read mode, get our offset
+         *  value, lock the the global offset in write mode, increment it, and
+         *  unlock it. Other threads waiting to read and increment the global
+         *  file offset may get spurious values if we treat read and write
+         *  operations distinctly. Reading and writing operations on the global
+         *  file offset must be treated atomically, so this is the perfect use
+         *  case for a mutex.
+         * 
+         */
         if (thread_arguments->file == 1) {
             pthread_mutex_lock(&f1_lock);
             current_offset = f1_offset;
@@ -173,6 +189,12 @@ void* thread_process_file(void* arg) {
             fatal_error("Invalid file id");
         }
         
+        /** The benefit of using 'pread' over 'read' is that not only is pread
+         *  equivalent to using 'lseek' then 'read', which is perfect here
+         *  because each thread is keeping track of its own offset in the
+         *  input file, but pread is an atomic IO operation.
+         * 
+         */
         bytes_read = pread(input_file_descriptor, input_buffer, BUFFER_SIZE, current_offset);
 
         if ((bytes_read == 0) || ((bytes_read == -1))) {
