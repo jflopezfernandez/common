@@ -47,7 +47,7 @@ enum { FALSE = 0, TRUE = !FALSE };
  *  actually beneficial.
  * 
  */
-#define BUFFER_SIZE (65536)
+#define BUFFER_SIZE (4096)
 #else
 #error "BUFFER_SIZE already defined."
 #endif // BUFFER_SIZE
