@@ -30,6 +30,18 @@
 
 #include "common.h"
 
+/** This object holds the parameters needed by each thread to execute the
+ *  'thread_process_file' function, which each thread's main method. The object
+ *  contains two fields:
+ * 
+ *      1. filename     The name of the input file to process
+ *      2. file         The number (1 or 2) of the input file it is handling
+ * 
+ *  The thread's start function takes a single void pointer argument, meaning
+ *  that we have to aggregate the arguments into a single object to then pass
+ *  in.
+ * 
+ */
 struct thread_arguments_t {
     const char* filename;
     int file;
