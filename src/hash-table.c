@@ -98,7 +98,13 @@ const char* most_common_shared_word(void) {
     return most_common_word;
 }
 
-/** This is the hash table for the strings in the input files.
+/** This is the hash table for the strings in the input files. The hash table
+ *  employs lock-based synchronization in the form of reader-writer locks to
+ *  ensure data coherence in spite of being manipulated by multiple threads
+ *  concurrently.
+ * 
+ *  Each entry in the hash table has its own reader-writer lock to allow for
+ *  more granular control over memory resources.
  * 
  */
 static struct table_entry_t *hash_table[HASH_MODULUS];
