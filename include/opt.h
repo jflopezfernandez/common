@@ -6,8 +6,7 @@ typedef enum {
     OPTION_NONE,
     OPTION_HELP,
     OPTION_VERSION,
-    OPTION_VERBOSE,
-    OPTION_TOP_N
+    OPTION_VERBOSE
 } option_id_t;
 
 struct option_t {
