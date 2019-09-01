@@ -35,6 +35,35 @@ static int first_file = TRUE;
 int processing_first_file(void) {
     return first_file;
 }
+
+struct thread_arguments_t {
+    const char* filename;
+    int file;
+};
+
+struct thread_arguments_t* allocate_thread_arguments(void) {
+    struct thread_arguments_t* thread_arguments = malloc(sizeof (struct thread_arguments_t));
+
+    if (thread_arguments == NULL) {
+        fatal_error("Memory allocation failure in allocate_thread_arguments");
+    }
+
+    return thread_arguments;
+}
+
+struct thread_arguments_t* create_thread_arguments(const char* filename, int file) {
+    struct thread_arguments_t* thread_arguments = allocate_thread_arguments();
+
+    thread_arguments->filename = strdup(filename);
+
+    if (thread_arguments->filename == NULL) {
+        fatal_error("strdup() failed in create_thread_arguments");
+    }
+
+    thread_arguments->file = file;
+
+    return thread_arguments;
+}
    
 #ifndef DELIMITERS
 #define DELIMITERS " \n\t!\"#$%&'()*+,-./:;<=>?@[\\]^_`}|{~"
@@ -48,16 +77,20 @@ int processing_first_file(void) {
  *  chunks is the most efficient way of maximizing disk throughput.
  * 
  */
-static char input_buffer[BUFFER_SIZE];
+// static char input_buffer[BUFFER_SIZE];
 
-int main(int argc, char *argv[])
-{
-    const char** filenames = parse_command_line_options(argc, argv);
+void* thread_process_file(void* arg) {
+    /** This is the buffer responsible for streamlining disk-read operations as
+     *  much as possible. The buffer is 64kb long to benefit as much as possible
+     *  from the sequential read that's going on in this admittedly contrived
+     *  example, but generally speaking, the buffer size should always be a
+     *  multiple of the sector size of the hard drive, as reading in sector-aligned
+     *  chunks is the most efficient way of maximizing disk throughput.
+     * 
+     */
+    char input_buffer[4096] = { 0 };
 
-PROCESS_NEXT_FILE:
-    errno = 0;
-    
-    int input_file_descriptor = open_file_descriptor(*filenames++, O_RDONLY);
+    int input_file_descriptor = open_file_descriptor(((struct thread_arguments_t *) arg)->filename, O_RDONLY);
 
     /** Having parsed the command-line arguments and successfully opened the
      *  first of two files, we will now inform the kernel about the significant
@@ -78,7 +111,11 @@ PROCESS_NEXT_FILE:
 
     ssize_t bytes_read = 0;
 
-    while ((bytes_read = read(input_file_descriptor, input_buffer, BUFFER_SIZE))) {
+    while ((bytes_read = read(input_file_descriptor, input_buffer, 4096))) {
+        if (bytes_read == -1) {
+            break;
+        }
+
         char* token_reentrancy_pointer = NULL;
 
         char* word = strtok_r(input_buffer, DELIMITERS, &token_reentrancy_pointer);
@@ -87,19 +124,52 @@ PROCESS_NEXT_FILE:
             continue;
         }
 
-        add_word_to_table(word);
+        add_word_to_table(word, ((struct thread_arguments_t *) arg)->file);
 
         while ((word = strtok_r(NULL, DELIMITERS, &token_reentrancy_pointer)) != NULL) {
-            add_word_to_table(word);
+            add_word_to_table(word, ((struct thread_arguments_t *) arg)->file);
         }
     }
 
     close_file_descriptor(input_file_descriptor);
 
-    if (first_file) {
-        first_file = FALSE;
+    return NULL;
+}
 
-        goto PROCESS_NEXT_FILE;
+/** This is the entry point of the program, which begins by calling the
+ *  parse_command_line_options function. This function handles any options and
+ *  validates the number of command line parameters. This allows the rest of
+ *  the main function to deal only with the actual mechanics of processing each
+ *  input file.
+ * 
+ */
+int main(int argc, char *argv[])
+{
+    /** This argument vector returned by parse_command_line_options contains
+     *  only the names of the filenames to process. The current program is
+     *  structured to handle only two filenames, but this limit is arbitrary
+     *  and could be changed with only minor modifications.
+     * 
+     */
+    char** filenames = parse_command_line_options(argc, argv);
+
+    pthread_t t1;
+    pthread_t t2;
+
+    struct thread_arguments_t* t1_args = create_thread_arguments(filenames[0], 1);
+
+    if (pthread_create(&t1, NULL, thread_process_file, t1_args)) {
+        fatal_error("Could not create new thread");
+    }
+
+    struct thread_arguments_t* t2_args = create_thread_arguments(filenames[1], 2);
+
+    if (pthread_create(&t2, NULL, thread_process_file, t2_args)) {
+        fatal_error("Could not create new thread");
+    }
+
+    if (pthread_join(t2, NULL) || pthread_join(t1, NULL)) {
+        fatal_error("Could not rejoin sub-threads");
     }
 
     /** This is the grand-finale; should there exist a string commonly found
@@ -113,6 +183,18 @@ PROCESS_NEXT_FILE:
     if (most_common_shared_word()) {
         printf("%s\n", most_common_shared_word());
     }
+
+    FREE(t1_args->filename);
+    FREE(t2_args->filename);
+
+    FREE(t1_args);
+    FREE(t2_args);
+
+    FREE(filenames[0]);
+    FREE(filenames[1]);
+    FREE(filenames);
+
+    release_table_resources();
 
     return EXIT_SUCCESS;
 }

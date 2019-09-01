@@ -26,6 +26,6 @@ struct option_t {
  * 
  */
 __attribute__((nonnull(2), returns_nonnull))
-const char** parse_command_line_options(int argc, char *argv[]);
+char** parse_command_line_options(int argc, char *argv[]);
 
 #endif // PROJECT_INCLUDES_OPT_H

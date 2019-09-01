@@ -32,7 +32,7 @@ MANPAGE  = $(wildcard man/*.1)
 MAPFILE  = map.file
 
 CC       = gcc
-CFLAGS   = -std=c99 -Wall -Wextra -Wpedantic -mtune=intel -march=sandybridge -ggdb -O0
+CFLAGS   = -std=c99 -Wall -Wextra -Wpedantic -mtune=intel -march=sandybridge -g -ggdb -O0
 # CFLAGS   = -std=c99 -Wall -Wextra -Wpedantic -Ofast -mtune=intel \
 #            -march=sandybridge -fmerge-all-constants -fmodulo-sched \
 #            -fmodulo-sched-allow-regmoves -fgcse-sm -fgcse-las \
@@ -78,12 +78,14 @@ TESTS    = $(basename $(TESTOBJS))
 
 all: release
 
-.PHONY: release
 release: $(TARGET)
-	$(STRIP) $(STRIPOPTS) $^
 
 .PHONY: debug
 debug: $(TARGET)
+
+.PHONY: memcheck
+memcheck: $(TARGET)
+	valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all --track-origins=yes --expensive-definedness-checks=yes --leak-resolution=high ./$(TARGET) data/a data/b
 
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -I include    -o $@ $^ $(LDFLAGS) $(LIBS)
@@ -174,7 +176,7 @@ view-manpage: $(MANPAGE)
 
 .PHONY: clean
 clean:
-	$(RM) $(OBJS) $(TARGET)
+	$(RM) $(wildcard vgcore.*) $(OBJS) $(TARGET)
 
 .PHONY: clean-all
 clean-all: clean clean-mapfile clean-gcov clean-profile clean-tests clean-assembly-listings

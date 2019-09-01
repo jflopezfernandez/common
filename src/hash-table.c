@@ -88,11 +88,25 @@ static double current_max = 0.0;
 
 static char* most_common_word = NULL;
 
+/** This function returns the most common word shared by the two input files.
+ *  The most_common_word variable is initially zero, so if there is no common
+ *  word, maybe because the two input files are empty, the return value will be
+ *  a NULL pointer. 
+ * 
+ */
 const char* most_common_shared_word(void) {
     return most_common_word;
 }
 
+/** This is the hash table for the strings in the input files.
+ * 
+ */
 static struct table_entry_t *hash_table[HASH_MODULUS];
+
+/** This is the mutex for the hash table.
+ * 
+ */
+static pthread_mutex_t hash_table_lock = PTHREAD_MUTEX_INITIALIZER;
 
 __attribute__((hot, returns_nonnull))
 static struct table_entry_t* allocate_table_entry(void) {
@@ -111,11 +125,18 @@ static struct table_entry_t* create_table_entry(const char* word) {
 
     entry->count1 = 0;
     entry->count2 = 0;
+
     entry->word   = strdup(word);
 
     if (entry->word == NULL) {
         fatal_error("Memory allocation failure in create_table_entry->strdup(word)");
     }
+
+    if (pthread_mutex_init(&entry->lock, NULL)) {
+        fatal_error("Failed to dynamically initialize entry mutex");
+    }
+
+    entry->next = NULL;
 
     return entry;
 }
@@ -175,45 +196,109 @@ __attribute__((nonnull(1)))
 static struct table_entry_t* lookup_word(const char* word) {
     struct table_entry_t* entry = hash_table[calculate_hash(word)];
 
+    pthread_mutex_lock(&hash_table_lock);
+
     while (entry) {
         if (strings_match(word, entry->word)) {
-            return entry;
+            break;
         }
 
         entry = entry->next;
     }
 
-    return NULL;
+    pthread_mutex_unlock(&hash_table_lock);
+
+    return entry;
 }
 
+static inline void increment_reference_count(struct table_entry_t* entry, int file) {
+    pthread_mutex_lock(&entry->lock);
+
+    if (file == 1) {
+        ++entry->count1;
+    } else if (file == 2) {
+        ++entry->count2;
+    } else {
+        fatal_error("Invalid file number");
+    }
+
+    pthread_mutex_unlock(&entry->lock);
+}
+
+static inline void calculate_commonality_score(struct table_entry_t* entry) {
+    double entry_commonality_score = commonality(entry, harmonic_mean);
+
+    if (entry_commonality_score > current_max) {
+        current_max = entry_commonality_score;
+        most_common_word = entry->word;
+    }
+}
+
+/** This is where most of the magic happens. The bulk of the application is
+ *  building the hash table which will result in us being able to give the user
+ *  an answer when the application has finished executing. This function takes
+ *  care of adding new entries to the hash table as we encounter them, as well
+ *  as incrementing reference counts if the given entry already exists in the
+ *  hash table. The file integer is what allows for the distinction between
+ *  files 1 and 2.
+ * 
+ */
 __attribute__((nonnull(1), returns_nonnull))
-struct table_entry_t* add_word_to_table(const char* word) {
+struct table_entry_t* add_word_to_table(const char* word, int file) {
+    /** Look up the word in the table by passing in the 'word' string to the
+     *  lookup_word function. 'lookup_word' handles hashing the word and
+     *  determining whether the entry is in the hash table. If it isn't, the
+     *  return value will be a NULL pointer.
+     * 
+     */
     struct table_entry_t* entry = lookup_word(word);
 
+    /** Having determined that the entry is not already in the hash table, we
+     *  must add it now. The create_table_entry takes care of allocating an
+     *  entry struct, deep-copying in the word string, and return the pointer
+     *  to the entry.
+     * 
+     *  Prior to modifying the hash table pointers, we lock the hash_table_lock
+     *  mutex to prevent modifications to the same memory by two different
+     *  threads, corrupting the data.
+     * 
+     */
     if (entry == NULL) {
         entry = create_table_entry(word);
 
+        pthread_mutex_lock(&hash_table_lock);
         size_t hashval = calculate_hash(entry->word);
         entry->next = hash_table[hashval];
         hash_table[hashval] = entry;
+        pthread_mutex_unlock(&hash_table_lock);
     }
 
-    if (processing_first_file()) {
-        ++entry->count1;
-    } else {
-        ++entry->count2;
-    }
+    increment_reference_count(entry, file);
 
-    if (!processing_first_file()) {
-        double entry_commonality_score = commonality(entry, harmonic_mean);
-
-        if (entry_commonality_score > current_max) {
-            current_max = entry_commonality_score;
-            most_common_word = entry->word;
-        }
-    }
+    calculate_commonality_score(entry);
 
     return entry;
+}
+
+void release_table_resources(void) {
+    for (size_t i = 0; i < HASH_MODULUS; ++i) {
+        struct table_entry_t* entry = hash_table[i];
+
+        while (entry) {
+            struct table_entry_t* next = NULL;
+
+            if (entry->next) {
+                next = entry->next;
+            }
+
+            pthread_mutex_destroy(&entry->lock);
+
+            FREE(entry->word);
+            FREE(entry);
+
+            entry = next;
+        }
+    }
 }
 
 #if defined(HASH_MODULUS)

@@ -23,6 +23,7 @@ struct table_entry_t {
     char* word;
     size_t count1;
     size_t count2;
+    pthread_mutex_t lock;
     struct table_entry_t* next;
 };
 
@@ -31,10 +32,13 @@ struct table_entry_t {
  *  an answer when the application has finished executing. This function takes
  *  care of adding new entries to the hash table as we encounter them, as well
  *  as incrementing reference counts if the given entry already exists in the
- *  hash table.
+ *  hash table. The file integer is what allows for the distinction between
+ *  files 1 and 2.
  * 
  */
 __attribute__((hot, nonnull(1), returns_nonnull))
-struct table_entry_t* add_word_to_table(const char* word);
+struct table_entry_t* add_word_to_table(const char* word, int file);
+
+void release_table_resources(void);
 
 #endif // PROJECT_INCLUDES_HASH_TABLE_H

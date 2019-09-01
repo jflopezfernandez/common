@@ -20,7 +20,7 @@ void safe_free(void** ptr);
  *  to mitigate spurious type errors from the compiler.
  * 
  */
-#define FREE(ptr) ((void **) &(ptr))
+#define FREE(ptr) safe_free((void **) &ptr)
 #endif
 
 #endif // PROJECT_INCLUDES_MEM_H

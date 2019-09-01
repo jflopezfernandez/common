@@ -84,7 +84,7 @@ static void print_version_info(void) {
     printf("%s\n", version_str);
 }
 
-static const char** arguments = NULL;
+static char** arguments = NULL;
 
 static size_t number_of_non_option_arguments = 0;
 
@@ -126,7 +126,7 @@ static void add_argument(const char* argument) {
  *  this limit is arbitrary.
  * 
  */
-const char** parse_command_line_options(int argc, char *argv[]) {
+char** parse_command_line_options(int argc, char *argv[]) {
     for (int i = 1; i < argc; ++i) {
         option_id_t option_id = string_matches_program_option(argv[i]);
 
