@@ -26,3 +26,8 @@ Find the most common string shared between two files.
     -v, --verbose                Display detailed info during program execution
 
 ```
+
+```
+$ common --threads 8 a.txt b.txt
+apple
+```
