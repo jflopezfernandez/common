@@ -224,4 +224,6 @@ char** parse_command_line_options(int argc, char *argv[]) {
     return arguments;
 }
 
+#if defined(NONE)
 #undef NONE
+#endif
