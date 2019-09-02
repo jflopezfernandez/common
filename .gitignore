@@ -65,3 +65,7 @@ dkms.conf
 # Test Data Directories
 /data/
 
+# Miscellaneous Files
+a
+b
+
