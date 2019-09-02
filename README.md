@@ -27,6 +27,37 @@ Find the most common string shared between two files.
 
 ```
 
+a.txt
+```
+banana
+banana
+banana
+banana
+banana
+banana
+banana
+banana
+banana
+banana
+banana
+banana
+banana
+banana
+banana
+banana
+apple
+apple
+apple
+orange
+```
+b.txt
+```
+banana
+apple
+apple
+apple
+```
+
 ```
 $ common --threads 8 a.txt b.txt
 apple
