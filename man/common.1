@@ -16,6 +16,12 @@ times, but if it's not also present in the second file, it will result in a
 commonality score of zero.
 .SS OPTIONS
 .TP
+.BR \-j " " N ", " \-\-threads " " N
+Specify the number of threads to use during program execution, with the default
+being two. In the current implementation, the number of threads specified
+must be an even number, as the threads are then evenly split amongst the two
+input files.
+.TP
 .BR \-h ", " \-\-help
 Display the program help menu and exit.
 .TP
@@ -25,19 +31,21 @@ Display program version information and exit.
 .BR \-v ", " \-\-verbose
 Display detailed info during program execution.
 .SH NOTES
-The current implementation is pretty CPU-throttled, as I wasn't at all happy
-with the implementation I wrote using pthreads, but due to time constraints I
-decided to simply rip out the whole thing and replace with with a simple
-single-processor sequential-read. What it lacks in complexity it makes up for
-in speed though. It correctly processed two files six gigabytes each in about
-five minutes. That's actually a little better than the results I was getting
-by memory-mapping the input like I initially tried, which I must admit was
-surprising.
+Profiling the new multithreaded version has shown that the ideal number of
+threads is roughly eight on a fairly modern system, provided the input file is
+of a decent size. Input files of less than a few megabytes need no more than
+two threads, one for each input file.
+.PP
+The decreasing and even negative returns of adding more threads is that the
+hash table underlying the implementation relies on lock-based synchronization
+primitives. As more threads enter the picture, the more often they must wait
+for a resource.
 .SH SEE ALSO
-.BR strtok_r(3)
+.BR strtok_r(3) ", " pthreads(7)
 .SH AUTHOR
 Jose Fernando Lopez Fernandez <jflopezfernandez@gmail.com>
 .SH BUGS
 The
 .B \-\-verbose
-command-line option does absolutely nothing right now.
+command-line option does *almost* absolutely nothing right now (progress has
+been made!).
