@@ -88,6 +88,20 @@ static double volatile current_max = 0.0;
 
 static char volatile* most_common_word = NULL;
 
+/** This mutex prevents multiple threads clobbering the current max due to race
+ *  conditions. The choice to use of a mutex over a reader-writer lock was made
+ *  in light of the fact that a reader-writer lock would need to be locked in
+ *  read mode to check the max and then re-locked in write mode if the max
+ *  required modification. I'm not 100% sure if the rw-lock requires an
+ *  intermediate unlock before re-locking in write mode, but if it doesn't I'll
+ *  change this to a reader-writer lock to enhance throughput. After all, most
+ *  threads presumably won't need to modify the max, as the current count will
+ *  be too low, especially towards the end of execution. When the time comes
+ *  I'll be sure to profile to verify.
+ * 
+ */
+static pthread_mutex_t max_lock = PTHREAD_MUTEX_INITIALIZER;
+
 /** This function returns the most common word shared by the two input files.
  *  The most_common_word variable is initially zero, so if there is no common
  *  word, maybe because the two input files are empty, the return value will be
@@ -280,10 +294,14 @@ static inline void increment_reference_count(struct table_entry_t* entry, int fi
 static inline void calculate_commonality_score(struct table_entry_t* entry) {
     double entry_commonality_score = commonality(entry, harmonic_mean);
 
+    pthread_mutex_lock(&max_lock);
+
     if (entry_commonality_score > current_max) {
         current_max = entry_commonality_score;
         most_common_word = entry->word;
     }
+
+    pthread_mutex_unlock(&max_lock);
 }
 
 /** This is where most of the magic happens. The bulk of the application is
