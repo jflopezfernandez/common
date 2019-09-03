@@ -84,9 +84,9 @@ static hash_t weinberger_hash(const char* str) {
  */
 static hash_function calculate_hash = weinberger_hash;
 
-static double current_max = 0.0;
+static double volatile current_max = 0.0;
 
-static char* most_common_word = NULL;
+static char volatile* most_common_word = NULL;
 
 /** This function returns the most common word shared by the two input files.
  *  The most_common_word variable is initially zero, so if there is no common
@@ -94,7 +94,7 @@ static char* most_common_word = NULL;
  *  a NULL pointer. 
  * 
  */
-const char* most_common_shared_word(void) {
+const char volatile* most_common_shared_word(void) {
     return most_common_word;
 }
 

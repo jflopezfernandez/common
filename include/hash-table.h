@@ -10,7 +10,7 @@
  *  file.
  * 
  */
-const char* most_common_shared_word(void);
+const char volatile* most_common_shared_word(void);
 
 /** This is the struct that represents each hash table entry in memory. The
  *  reason for the separate reference counts for files 1 and 2 is because I
